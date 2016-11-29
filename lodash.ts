@@ -1707,8 +1707,11 @@
      *
      * @private
      */
-    function baseLodash() {
+    class baseLodash {
+      __wrapped__;
+      constructor() {
       // No operation performed.
+    }
     }
 
     /**
@@ -1796,6 +1799,13 @@
 
     /*------------------------------------------------------------------------*/
 
+    class LazyWrapper extends baseLodash {
+      __actions__;
+      __dir__;
+      __filtered__;
+      __iteratees__;
+      __takeCount__;
+      __views__;
     /**
      * Creates a lazy wrapper object which wraps `value` to enable lazy evaluation.
      *
@@ -1803,7 +1813,8 @@
      * @constructor
      * @param {*} value The value to wrap.
      */
-    function LazyWrapper(value) {
+    constructor(value) {
+      super();
       this.__wrapped__ = value;
       this.__actions__ = [];
       this.__dir__ = 1;
@@ -1821,7 +1832,7 @@
      * @memberOf LazyWrapper
      * @returns {Object} Returns the cloned `LazyWrapper` object.
      */
-    function lazyClone() {
+    clone() {
       var result = new LazyWrapper(this.__wrapped__);
       result.__actions__ = copyArray(this.__actions__);
       result.__dir__ = this.__dir__;
@@ -1840,7 +1851,7 @@
      * @memberOf LazyWrapper
      * @returns {Object} Returns the new reversed `LazyWrapper` object.
      */
-    function lazyReverse() {
+    reverse() {
       if (this.__filtered__) {
         var result = new LazyWrapper(this);
         result.__dir__ = -1;
@@ -1860,7 +1871,7 @@
      * @memberOf LazyWrapper
      * @returns {*} Returns the unwrapped value.
      */
-    function lazyValue() {
+    value() {
       var array = this.__wrapped__.value(),
           dir = this.__dir__,
           isArr = isArray(array),
@@ -1910,9 +1921,184 @@
       return result;
     }
 
-    // Ensure `LazyWrapper` is an instance of `baseLodash`.
-    LazyWrapper.prototype = baseCreate(baseLodash.prototype);
-    LazyWrapper.prototype.constructor = LazyWrapper;
+      // // Add `LazyWrapper` methods for `_.drop` and `_.take` variants.
+      // arrayEach(['drop', 'take'], function(methodName, index) {
+      //   LazyWrapper.prototype[methodName] = function(n) {
+      //     var filtered = this.__filtered__;
+      //     if (filtered && !index) {
+      //       return new LazyWrapper(this);
+      //     }
+      //     n = n === undefined ? 1 : nativeMax(toInteger(n), 0);
+      //
+      //     var result = this.clone();
+      //     if (filtered) {
+      //       result.__takeCount__ = nativeMin(n, result.__takeCount__);
+      //     } else {
+      //       result.__views__.push({
+      //         'size': nativeMin(n, MAX_ARRAY_LENGTH),
+      //         'type': methodName + (result.__dir__ < 0 ? 'Right' : '')
+      //       });
+      //     }
+      //     return result;
+      //   };
+      //
+      //   LazyWrapper.prototype[methodName + 'Right'] = function(n) {
+      //     return this.reverse()[methodName](n).reverse();
+      //   };
+      // });
+      drop(n) {
+        var filtered = this.__filtered__;
+        if (filtered && !0) {
+          return new LazyWrapper(this);
+        }
+        n = n === undefined ? 1 : nativeMax(toInteger(n), 0);
+
+        var result = this.clone();
+        if (filtered) {
+          result.__takeCount__ = nativeMin(n, result.__takeCount__);
+        } else {
+          result.__views__.push({
+            'size': nativeMin(n, MAX_ARRAY_LENGTH),
+            'type': 'drop' + (result.__dir__ < 0 ? 'Right' : '')
+          });
+        }
+        return result;
+      }
+
+      dropRight(n) {
+        return this.reverse().drop(n).reverse();
+      }
+
+      take(n) {
+        var filtered = this.__filtered__;
+        if (filtered && !1) {
+          return new LazyWrapper(this);
+        }
+        n = n === undefined ? 1 : nativeMax(toInteger(n), 0);
+
+        var result = this.clone();
+        if (filtered) {
+          result.__takeCount__ = nativeMin(n, result.__takeCount__);
+        } else {
+          result.__views__.push({
+            'size': nativeMin(n, MAX_ARRAY_LENGTH),
+            'type': 'take' + (result.__dir__ < 0 ? 'Right' : '')
+          });
+        }
+        return result;
+      }
+
+      takeRight(n) {
+        return this.reverse().take(n).reverse();
+      }
+
+      // // Add `LazyWrapper` methods that accept an `iteratee` value.
+      // arrayEach(['filter', 'map', 'takeWhile'], function(methodName, index) {
+      //   var type = index + 1,
+      //     isFilter = type == LAZY_FILTER_FLAG || type == LAZY_WHILE_FLAG;
+      //
+      //   LazyWrapper.prototype[methodName] = function(iteratee) {
+      //     var result = this.clone();
+      //     result.__iteratees__.push({
+      //       'iteratee': getIteratee(iteratee, 3),
+      //       'type': type
+      //     });
+      //     result.__filtered__ = result.__filtered__ || isFilter;
+      //     return result;
+      //   };
+      // });
+
+      filter(iteratee) {
+        var result = this.clone();
+        result.__iteratees__.push({
+          'iteratee': getIteratee(iteratee, 3),
+          'type': LAZY_FILTER_FLAG
+        });
+        result.__filtered__ = result.__filtered__ || true;
+        return result;
+      }
+
+      map(iteratee) {
+        var result = this.clone();
+        result.__iteratees__.push({
+          'iteratee': getIteratee(iteratee, 3),
+          'type': LAZY_MAP_FLAG
+        });
+        result.__filtered__ = result.__filtered__ || false;
+        return result;
+      }
+
+      takeWhile(iteratee) {
+        var result = this.clone();
+        result.__iteratees__.push({
+          'iteratee': getIteratee(iteratee, 3),
+          'type': LAZY_WHILE_FLAG
+        });
+        result.__filtered__ = result.__filtered__ || true;
+        return result;
+      }
+
+      head() {
+        return this.take(1).value()[0];
+      }
+
+      last() {
+        return this.takeRight(1).value()[0];
+      }
+
+      initial() {
+        return this.__filtered__ ? new LazyWrapper(this) : this.dropRight(1);
+      }
+
+      tail() {
+        return this.__filtered__ ? new LazyWrapper(this) : this.drop(1);
+      }
+
+      compact() {
+        return this.filter(identity);
+      }
+
+      find(predicate) {
+        return this.filter(predicate).head();
+      }
+
+      findLast(predicate) {
+        return this.reverse().find(predicate);
+      }
+
+      invokeMap: Function;
+
+      reject(predicate) {
+        return this.filter(negate(getIteratee(predicate)));
+      }
+
+      slice(start, end) {
+        start = toInteger(start);
+
+        var result: LazyWrapper = this;
+        if (result.__filtered__ && (start > 0 || end < 0)) {
+          return new LazyWrapper(result);
+        }
+        if (start < 0) {
+          result = result.takeRight(-start);
+        } else if (start) {
+          result = result.drop(start);
+        }
+        if (end !== undefined) {
+          end = toInteger(end);
+          result = end < 0 ? result.dropRight(-end) : result.take(end - start);
+        }
+        return result;
+      }
+
+      takeRightWhile(predicate) {
+        return this.reverse().takeWhile(predicate).reverse();
+      }
+
+      toArray() {
+        return this.take(MAX_ARRAY_LENGTH);
+      }
+    }
 
     /*------------------------------------------------------------------------*/
 
@@ -5050,7 +5236,10 @@
     function createCurry(func, bitmask, arity) {
       var Ctor = createCtor(func);
 
-      function wrapper() {
+      class wrapper extends Function {
+        static placeholder;
+        constructor() {
+          super();
         var length = arguments.length,
             args = Array(length),
             index = length,
@@ -5071,6 +5260,7 @@
         }
         var fn = (this && this !== root && this instanceof wrapper) ? Ctor : func;
         return apply(fn, this, args);
+      }
       }
       return wrapper;
     }
@@ -5184,7 +5374,11 @@
           isFlip = bitmask & WRAP_FLIP_FLAG,
           Ctor = isBindKey ? undefined : createCtor(func);
 
-      function wrapper() {
+      class wrapper {
+        static name;
+        static placeholder;
+
+        constructor() {
         var length = arguments.length,
             args = Array(length),
             index = length;
@@ -5226,6 +5420,7 @@
           fn = Ctor || createCtor(fn);
         }
         return fn.apply(thisBinding, args);
+      }
       }
       return wrapper;
     }
@@ -5563,7 +5758,7 @@
         bitmask &= ~(WRAP_CURRY_FLAG | WRAP_CURRY_RIGHT_FLAG);
       }
       if (!bitmask || bitmask == WRAP_BIND_FLAG) {
-        var result = createBind(func, bitmask, thisArg);
+        var result: any = createBind(func, bitmask, thisArg);
       } else if (bitmask == WRAP_CURRY_FLAG || bitmask == WRAP_CURRY_RIGHT_FLAG) {
         result = createCurry(func, bitmask, arity);
       } else if ((bitmask == WRAP_PARTIAL_FLAG || bitmask == (WRAP_BIND_FLAG | WRAP_PARTIAL_FLAG)) && !holders.length) {
@@ -10240,6 +10435,8 @@
       return createWrap(key, bitmask, object, partials, holders);
     });
 
+    class curry {
+      static placeholder;
     /**
      * Creates a function that accepts arguments of `func` and either invokes
      * `func` returning its result, if at least `arity` number of arguments have
@@ -10281,13 +10478,17 @@
      * curried(1)(_, 3)(2);
      * // => [1, 2, 3]
      */
-    function curry(func, arity, guard) {
+    constructor(func, arity, guard) {
       arity = guard ? undefined : arity;
       var result = createWrap(func, WRAP_CURRY_FLAG, undefined, undefined, undefined, undefined, undefined, arity);
       result.placeholder = curry.placeholder;
       return result;
     }
+    }
 
+
+    class curryRight{
+      static placeholder;
     /**
      * This method is like `_.curry` except that arguments are applied to `func`
      * in the manner of `_.partialRight` instead of `_.partial`.
@@ -10326,11 +10527,12 @@
      * curried(3)(1, _)(2);
      * // => [1, 2, 3]
      */
-    function curryRight(func, arity, guard) {
+      constructor(func, arity, guard) {
       arity = guard ? undefined : arity;
       var result = createWrap(func, WRAP_CURRY_RIGHT_FLAG, undefined, undefined, undefined, undefined, undefined, arity);
       result.placeholder = curryRight.placeholder;
       return result;
+    }
     }
 
     /**
@@ -10481,7 +10683,8 @@
         return timerId === undefined ? result : trailingEdge(now());
       }
 
-      function debounced() {
+      class debounced {
+        constructor() {
         var time = now(),
             isInvoking = shouldInvoke(time);
 
@@ -10504,8 +10707,9 @@
         }
         return result;
       }
-      debounced.cancel = cancel;
-      debounced.flush = flush;
+      static cancel = cancel;
+      static flush = flush;
+      }
       return debounced;
     }
 
@@ -16835,78 +17039,6 @@
       lodash[methodName].placeholder = lodash;
     });
 
-    // Add `LazyWrapper` methods for `_.drop` and `_.take` variants.
-    arrayEach(['drop', 'take'], function(methodName, index) {
-      LazyWrapper.prototype[methodName] = function(n) {
-        var filtered = this.__filtered__;
-        if (filtered && !index) {
-          return new LazyWrapper(this);
-        }
-        n = n === undefined ? 1 : nativeMax(toInteger(n), 0);
-
-        var result = this.clone();
-        if (filtered) {
-          result.__takeCount__ = nativeMin(n, result.__takeCount__);
-        } else {
-          result.__views__.push({
-            'size': nativeMin(n, MAX_ARRAY_LENGTH),
-            'type': methodName + (result.__dir__ < 0 ? 'Right' : '')
-          });
-        }
-        return result;
-      };
-
-      LazyWrapper.prototype[methodName + 'Right'] = function(n) {
-        return this.reverse()[methodName](n).reverse();
-      };
-    });
-
-    // Add `LazyWrapper` methods that accept an `iteratee` value.
-    arrayEach(['filter', 'map', 'takeWhile'], function(methodName, index) {
-      var type = index + 1,
-          isFilter = type == LAZY_FILTER_FLAG || type == LAZY_WHILE_FLAG;
-
-      LazyWrapper.prototype[methodName] = function(iteratee) {
-        var result = this.clone();
-        result.__iteratees__.push({
-          'iteratee': getIteratee(iteratee, 3),
-          'type': type
-        });
-        result.__filtered__ = result.__filtered__ || isFilter;
-        return result;
-      };
-    });
-
-    // Add `LazyWrapper` methods for `_.head` and `_.last`.
-    arrayEach(['head', 'last'], function(methodName, index) {
-      var takeName = 'take' + (index ? 'Right' : '');
-
-      LazyWrapper.prototype[methodName] = function() {
-        return this[takeName](1).value()[0];
-      };
-    });
-
-    // Add `LazyWrapper` methods for `_.initial` and `_.tail`.
-    arrayEach(['initial', 'tail'], function(methodName, index) {
-      var dropName = 'drop' + (index ? '' : 'Right');
-
-      LazyWrapper.prototype[methodName] = function() {
-        return this.__filtered__ ? new LazyWrapper(this) : this[dropName](1);
-      };
-    });
-
-    LazyWrapper.prototype.compact = function() {
-      return this.filter(identity);
-    };
-
-    LazyWrapper.prototype.find = function(predicate) {
-      return this.filter(predicate).head();
-    };
-
-    LazyWrapper.prototype.findLast = function(predicate) {
-      return this.reverse().find(predicate);
-    };
-
     LazyWrapper.prototype.invokeMap = baseRest(function(path, args) {
       if (typeof path == 'function') {
         return new LazyWrapper(this);
@@ -16915,37 +17047,6 @@
         return baseInvoke(value, path, args);
       });
     });
-
-    LazyWrapper.prototype.reject = function(predicate) {
-      return this.filter(negate(getIteratee(predicate)));
-    };
-
-    LazyWrapper.prototype.slice = function(start, end) {
-      start = toInteger(start);
-
-      var result = this;
-      if (result.__filtered__ && (start > 0 || end < 0)) {
-        return new LazyWrapper(result);
-      }
-      if (start < 0) {
-        result = result.takeRight(-start);
-      } else if (start) {
-        result = result.drop(start);
-      }
-      if (end !== undefined) {
-        end = toInteger(end);
-        result = end < 0 ? result.dropRight(-end) : result.take(end - start);
-      }
-      return result;
-    };
-
-    LazyWrapper.prototype.takeRightWhile = function(predicate) {
-      return this.reverse().takeWhile(predicate).reverse();
-    };
-
-    LazyWrapper.prototype.toArray = function() {
-      return this.take(MAX_ARRAY_LENGTH);
-    };
 
     // Add `LazyWrapper` methods to `lodash.prototype`.
     baseForOwn(LazyWrapper.prototype, function(func, methodName) {
@@ -16957,6 +17058,7 @@
       if (!lodashFunc) {
         return;
       }
+      if(methodName === 'clone' || methodName === 'reverse' || methodName === 'value') return;
       lodash.prototype[methodName] = function() {
         var value = this.__wrapped__,
             args = isTaker ? [1] : arguments,
@@ -17025,11 +17127,6 @@
       'name': 'wrapper',
       'func': undefined
     }];
-
-    // Add methods to `LazyWrapper`.
-    LazyWrapper.prototype.clone = lazyClone;
-    LazyWrapper.prototype.reverse = lazyReverse;
-    LazyWrapper.prototype.value = lazyValue;
 
     // Add chain sequence methods to the `lodash` wrapper.
     lodash.prototype.at = wrapperAt;
