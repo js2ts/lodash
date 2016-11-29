@@ -693,7 +693,7 @@
    *  the initial value.
    * @returns {*} Returns the accumulated value.
    */
-  function arrayReduce(array, iteratee, accumulator, initAccum) {
+  function arrayReduce(array, iteratee, accumulator, initAccum?) {
     var index = -1,
         length = array == null ? 0 : array.length;
 
@@ -815,7 +815,7 @@
    * @param {boolean} [fromRight] Specify iterating from right to left.
    * @returns {number} Returns the index of the matched value, else `-1`.
    */
-  function baseFindIndex(array, predicate, fromIndex, fromRight) {
+  function baseFindIndex(array, predicate, fromIndex, fromRight?) {
     var length = array.length,
         index = fromIndex + (fromRight ? 1 : -1);
 
@@ -1424,14 +1424,14 @@
    * // Create a suped-up `defer` in Node.js.
    * var defer = _.runInContext({ 'setTimeout': setImmediate }).defer;
    */
-  var runInContext = (function runInContext(context) {
+  var runInContext = (function runInContext(context?) {
     context = context == null ? root : _.defaults(root.Object(), context, _.pick(root, contextProps));
 
     /** Built-in constructor references. */
     var Array = context.Array,
         Date = context.Date,
         Error = context.Error,
-        Function = context.Function,
+        // Function = context.Function,
         Math = context.Math,
         Object = context.Object,
         RegExp = context.RegExp,
@@ -1718,7 +1718,7 @@
      * @param {*} value The value to wrap.
      * @param {boolean} [chainAll] Enable explicit method chain sequences.
      */
-    function LodashWrapper(value, chainAll) {
+    function LodashWrapper(value, chainAll?) {
       this.__wrapped__ = value;
       this.__actions__ = [];
       this.__chain__ = !!chainAll;
@@ -1923,7 +1923,11 @@
      * @constructor
      * @param {Array} [entries] The key-value pairs to cache.
      */
-    function Hash(entries) {
+    class Hash {
+      private __data__;
+      private size;
+
+      constructor(entries?) {
       var index = -1,
           length = entries == null ? 0 : entries.length;
 
@@ -1941,7 +1945,7 @@
      * @name clear
      * @memberOf Hash
      */
-    function hashClear() {
+    clear() {
       this.__data__ = nativeCreate ? nativeCreate(null) : {};
       this.size = 0;
     }
@@ -1956,7 +1960,7 @@
      * @param {string} key The key of the value to remove.
      * @returns {boolean} Returns `true` if the entry was removed, else `false`.
      */
-    function hashDelete(key) {
+    delete(key) {
       var result = this.has(key) && delete this.__data__[key];
       this.size -= result ? 1 : 0;
       return result;
@@ -1971,7 +1975,7 @@
      * @param {string} key The key of the value to get.
      * @returns {*} Returns the entry value.
      */
-    function hashGet(key) {
+    get(key) {
       var data = this.__data__;
       if (nativeCreate) {
         var result = data[key];
@@ -1989,7 +1993,7 @@
      * @param {string} key The key of the entry to check.
      * @returns {boolean} Returns `true` if an entry for `key` exists, else `false`.
      */
-    function hashHas(key) {
+    has(key) {
       var data = this.__data__;
       return nativeCreate ? data[key] !== undefined : hasOwnProperty.call(data, key);
     }
@@ -2004,19 +2008,13 @@
      * @param {*} value The value to set.
      * @returns {Object} Returns the hash instance.
      */
-    function hashSet(key, value) {
+    set(key, value) {
       var data = this.__data__;
       this.size += this.has(key) ? 0 : 1;
       data[key] = (nativeCreate && value === undefined) ? HASH_UNDEFINED : value;
       return this;
     }
-
-    // Add methods to `Hash`.
-    Hash.prototype.clear = hashClear;
-    Hash.prototype['delete'] = hashDelete;
-    Hash.prototype.get = hashGet;
-    Hash.prototype.has = hashHas;
-    Hash.prototype.set = hashSet;
+    }
 
     /*------------------------------------------------------------------------*/
 
@@ -2027,7 +2025,11 @@
      * @constructor
      * @param {Array} [entries] The key-value pairs to cache.
      */
-    function ListCache(entries) {
+    class ListCache {
+      __data__;
+      size;
+
+      constructor(entries?) {
       var index = -1,
           length = entries == null ? 0 : entries.length;
 
@@ -2045,7 +2047,7 @@
      * @name clear
      * @memberOf ListCache
      */
-    function listCacheClear() {
+    clear() {
       this.__data__ = [];
       this.size = 0;
     }
@@ -2059,7 +2061,7 @@
      * @param {string} key The key of the value to remove.
      * @returns {boolean} Returns `true` if the entry was removed, else `false`.
      */
-    function listCacheDelete(key) {
+    delete(key) {
       var data = this.__data__,
           index = assocIndexOf(data, key);
 
@@ -2085,7 +2087,7 @@
      * @param {string} key The key of the value to get.
      * @returns {*} Returns the entry value.
      */
-    function listCacheGet(key) {
+    get(key) {
       var data = this.__data__,
           index = assocIndexOf(data, key);
 
@@ -2101,7 +2103,7 @@
      * @param {string} key The key of the entry to check.
      * @returns {boolean} Returns `true` if an entry for `key` exists, else `false`.
      */
-    function listCacheHas(key) {
+    has(key) {
       return assocIndexOf(this.__data__, key) > -1;
     }
 
@@ -2115,7 +2117,7 @@
      * @param {*} value The value to set.
      * @returns {Object} Returns the list cache instance.
      */
-    function listCacheSet(key, value) {
+    set(key, value) {
       var data = this.__data__,
           index = assocIndexOf(data, key);
 
@@ -2127,13 +2129,7 @@
       }
       return this;
     }
-
-    // Add methods to `ListCache`.
-    ListCache.prototype.clear = listCacheClear;
-    ListCache.prototype['delete'] = listCacheDelete;
-    ListCache.prototype.get = listCacheGet;
-    ListCache.prototype.has = listCacheHas;
-    ListCache.prototype.set = listCacheSet;
+    }
 
     /*------------------------------------------------------------------------*/
 
@@ -2144,7 +2140,11 @@
      * @constructor
      * @param {Array} [entries] The key-value pairs to cache.
      */
-    function MapCache(entries) {
+    class MapCache {
+      private size;
+      private __data__;
+
+      constructor(entries?) {
       var index = -1,
           length = entries == null ? 0 : entries.length;
 
@@ -2162,7 +2162,7 @@
      * @name clear
      * @memberOf MapCache
      */
-    function mapCacheClear() {
+    clear() {
       this.size = 0;
       this.__data__ = {
         'hash': new Hash,
@@ -2180,7 +2180,7 @@
      * @param {string} key The key of the value to remove.
      * @returns {boolean} Returns `true` if the entry was removed, else `false`.
      */
-    function mapCacheDelete(key) {
+    delete(key) {
       var result = getMapData(this, key)['delete'](key);
       this.size -= result ? 1 : 0;
       return result;
@@ -2195,7 +2195,7 @@
      * @param {string} key The key of the value to get.
      * @returns {*} Returns the entry value.
      */
-    function mapCacheGet(key) {
+    get(key) {
       return getMapData(this, key).get(key);
     }
 
@@ -2208,7 +2208,7 @@
      * @param {string} key The key of the entry to check.
      * @returns {boolean} Returns `true` if an entry for `key` exists, else `false`.
      */
-    function mapCacheHas(key) {
+    has(key) {
       return getMapData(this, key).has(key);
     }
 
@@ -2222,7 +2222,7 @@
      * @param {*} value The value to set.
      * @returns {Object} Returns the map cache instance.
      */
-    function mapCacheSet(key, value) {
+    set(key, value) {
       var data = getMapData(this, key),
           size = data.size;
 
@@ -2230,13 +2230,7 @@
       this.size += data.size == size ? 0 : 1;
       return this;
     }
-
-    // Add methods to `MapCache`.
-    MapCache.prototype.clear = mapCacheClear;
-    MapCache.prototype['delete'] = mapCacheDelete;
-    MapCache.prototype.get = mapCacheGet;
-    MapCache.prototype.has = mapCacheHas;
-    MapCache.prototype.set = mapCacheSet;
+    }
 
     /*------------------------------------------------------------------------*/
 
@@ -2248,7 +2242,10 @@
      * @constructor
      * @param {Array} [values] The values to cache.
      */
-    function SetCache(values) {
+    class SetCache {
+      private __data__;
+
+      constructor(values?) {
       var index = -1,
           length = values == null ? 0 : values.length;
 
@@ -2268,7 +2265,7 @@
      * @param {*} value The value to cache.
      * @returns {Object} Returns the cache instance.
      */
-    function setCacheAdd(value) {
+    add(value) {
       this.__data__.set(value, HASH_UNDEFINED);
       return this;
     }
@@ -2282,13 +2279,12 @@
      * @param {*} value The value to search for.
      * @returns {number} Returns `true` if `value` is found, else `false`.
      */
-    function setCacheHas(value) {
+    has(value) {
       return this.__data__.has(value);
     }
 
-    // Add methods to `SetCache`.
-    SetCache.prototype.add = SetCache.prototype.push = setCacheAdd;
-    SetCache.prototype.has = setCacheHas;
+    push = this.add;
+    }
 
     /*------------------------------------------------------------------------*/
 
@@ -2299,7 +2295,11 @@
      * @constructor
      * @param {Array} [entries] The key-value pairs to cache.
      */
-    function Stack(entries) {
+    class Stack {
+      __data__;
+      size;
+
+      constructor(entries?) {
       var data = this.__data__ = new ListCache(entries);
       this.size = data.size;
     }
@@ -2311,7 +2311,7 @@
      * @name clear
      * @memberOf Stack
      */
-    function stackClear() {
+    clear() {
       this.__data__ = new ListCache;
       this.size = 0;
     }
@@ -2325,7 +2325,7 @@
      * @param {string} key The key of the value to remove.
      * @returns {boolean} Returns `true` if the entry was removed, else `false`.
      */
-    function stackDelete(key) {
+    delete(key) {
       var data = this.__data__,
           result = data['delete'](key);
 
@@ -2342,7 +2342,7 @@
      * @param {string} key The key of the value to get.
      * @returns {*} Returns the entry value.
      */
-    function stackGet(key) {
+    get(key) {
       return this.__data__.get(key);
     }
 
@@ -2355,7 +2355,7 @@
      * @param {string} key The key of the entry to check.
      * @returns {boolean} Returns `true` if an entry for `key` exists, else `false`.
      */
-    function stackHas(key) {
+    has(key) {
       return this.__data__.has(key);
     }
 
@@ -2369,7 +2369,7 @@
      * @param {*} value The value to set.
      * @returns {Object} Returns the stack cache instance.
      */
-    function stackSet(key, value) {
+    set(key, value) {
       var data = this.__data__;
       if (data instanceof ListCache) {
         var pairs = data.__data__;
@@ -2384,13 +2384,7 @@
       this.size = data.size;
       return this;
     }
-
-    // Add methods to `Stack`.
-    Stack.prototype.clear = stackClear;
-    Stack.prototype['delete'] = stackDelete;
-    Stack.prototype.get = stackGet;
-    Stack.prototype.has = stackHas;
-    Stack.prototype.set = stackSet;
+    }
 
     /*------------------------------------------------------------------------*/
 
@@ -2402,7 +2396,7 @@
      * @param {boolean} inherited Specify returning inherited property names.
      * @returns {Array} Returns the array of property names.
      */
-    function arrayLikeKeys(value, inherited) {
+    function arrayLikeKeys(value, inherited?) {
       var isArr = isArray(value),
           isArg = !isArr && isArguments(value),
           isBuff = !isArr && !isArg && isBuffer(value),
@@ -2639,7 +2633,7 @@
      * @param {Object} [stack] Tracks traversed objects and their clone counterparts.
      * @returns {*} Returns the cloned value.
      */
-    function baseClone(value, bitmask, customizer, key, object, stack) {
+    function baseClone(value, bitmask, customizer?, key?, object?, stack?) {
       var result,
           isDeep = bitmask & CLONE_DEEP_FLAG,
           isFlat = bitmask & CLONE_FLAT_FLAG,
@@ -2773,9 +2767,9 @@
      * @param {Function} [comparator] The comparator invoked per element.
      * @returns {Array} Returns the new array of filtered values.
      */
-    function baseDifference(array, values, iteratee, comparator) {
+    function baseDifference(array, values, iteratee?, comparator?) {
       var index = -1,
-          includes = arrayIncludes,
+          includes: any = arrayIncludes,
           isCommon = true,
           length = array.length,
           result = [],
@@ -2942,7 +2936,7 @@
      * @param {Array} [result=[]] The initial result value.
      * @returns {Array} Returns the new flattened array.
      */
-    function baseFlatten(array, depth, predicate, isStrict, result) {
+    function baseFlatten(array, depth, predicate?, isStrict?, result?) {
       var index = -1,
           length = array.length;
 
@@ -3141,7 +3135,7 @@
      * @param {Function} [comparator] The comparator invoked per element.
      * @returns {Array} Returns the new array of shared values.
      */
-    function baseIntersection(arrays, iteratee, comparator) {
+    function baseIntersection(arrays, iteratee?, comparator?) {
       var includes = comparator ? arrayIncludesWith : arrayIncludes,
           length = arrays[0].length,
           othLength = arrays.length,
@@ -3276,7 +3270,7 @@
      * @param {Object} [stack] Tracks traversed `value` and `other` objects.
      * @returns {boolean} Returns `true` if the values are equivalent, else `false`.
      */
-    function baseIsEqual(value, other, bitmask, customizer, stack) {
+    function baseIsEqual(value, other, bitmask?, customizer?, stack?) {
       if (value === other) {
         return true;
       }
@@ -3366,7 +3360,7 @@
      * @param {Function} [customizer] The function to customize comparisons.
      * @returns {boolean} Returns `true` if `object` is a match, else `false`.
      */
-    function baseIsMatch(object, source, matchData, customizer) {
+    function baseIsMatch(object, source, matchData, customizer?) {
       var index = matchData.length,
           length = index,
           noCustomizer = !customizer;
@@ -3605,7 +3599,7 @@
      * @param {Object} [stack] Tracks traversed source values and their merged
      *  counterparts.
      */
-    function baseMerge(object, source, srcIndex, customizer, stack) {
+    function baseMerge(object, source, srcIndex, customizer?, stack?) {
       if (object === source) {
         return;
       }
@@ -3810,7 +3804,7 @@
      * @param {Function} [comparator] The comparator invoked per element.
      * @returns {Array} Returns `array`.
      */
-    function basePullAll(array, values, iteratee, comparator) {
+    function basePullAll(array, values, iteratee?, comparator?) {
       var indexOf = comparator ? baseIndexOfWith : baseIndexOf,
           index = -1,
           length = values.length,
@@ -3936,7 +3930,7 @@
      * @param {number} [start=func.length-1] The start position of the rest parameter.
      * @returns {Function} Returns the new function.
      */
-    function baseRest(func, start) {
+    function baseRest(func, start?) {
       return setToString(overRest(func, start, identity), func + '');
     }
 
@@ -3974,7 +3968,7 @@
      * @param {Function} [customizer] The function to customize path creation.
      * @returns {Object} Returns `object`.
      */
-    function baseSet(object, path, value, customizer) {
+    function baseSet(object, path, value, customizer?) {
       if (!isObject(object)) {
         return object;
       }
@@ -4106,7 +4100,7 @@
      * @returns {number} Returns the index at which `value` should be inserted
      *  into `array`.
      */
-    function baseSortedIndex(array, value, retHighest) {
+    function baseSortedIndex(array, value, retHighest?) {
       var low = 0,
           high = array == null ? low : array.length;
 
@@ -4140,7 +4134,7 @@
      * @returns {number} Returns the index at which `value` should be inserted
      *  into `array`.
      */
-    function baseSortedIndexBy(array, value, iteratee, retHighest) {
+    function baseSortedIndexBy(array, value, iteratee, retHighest?) {
       value = iteratee(value);
 
       var low = 0,
@@ -4189,7 +4183,7 @@
      * @param {Function} [iteratee] The iteratee invoked per element.
      * @returns {Array} Returns the new duplicate free array.
      */
-    function baseSortedUniq(array, iteratee) {
+    function baseSortedUniq(array, iteratee?) {
       var index = -1,
           length = array.length,
           resIndex = 0,
@@ -4258,13 +4252,13 @@
      * @param {Function} [comparator] The comparator invoked per element.
      * @returns {Array} Returns the new duplicate free array.
      */
-    function baseUniq(array, iteratee, comparator) {
+    function baseUniq(array, iteratee?, comparator?) {
       var index = -1,
-          includes = arrayIncludes,
+          includes: any = arrayIncludes,
           length = array.length,
           isCommon = true,
           result = [],
-          seen = result;
+          seen: any = result;
 
       if (comparator) {
         isCommon = false;
@@ -4334,7 +4328,7 @@
      * @param {Function} [customizer] The function to customize path creation.
      * @returns {Object} Returns `object`.
      */
-    function baseUpdate(object, path, updater, customizer) {
+    function baseUpdate(object, path, updater, customizer?) {
       return baseSet(object, path, updater(baseGet(object, path)), customizer);
     }
 
@@ -4349,7 +4343,7 @@
      * @param {boolean} [fromRight] Specify iterating from right to left.
      * @returns {Array} Returns the slice of `array`.
      */
-    function baseWhile(array, predicate, isDrop, fromRight) {
+    function baseWhile(array, predicate, isDrop?, fromRight?) {
       var length = array.length,
           index = fromRight ? length : -1;
 
@@ -4391,7 +4385,7 @@
      * @param {Function} [comparator] The comparator invoked per element.
      * @returns {Array} Returns the new array of values.
      */
-    function baseXor(arrays, iteratee, comparator) {
+    function baseXor(arrays, iteratee?, comparator?) {
       var length = arrays.length;
       if (length < 2) {
         return length ? baseUniq(arrays[0]) : [];
@@ -4491,7 +4485,7 @@
      * @param {number} [end=array.length] The end position.
      * @returns {Array} Returns the cast slice.
      */
-    function castSlice(array, start, end) {
+    function castSlice(array, start, end?) {
       var length = array.length;
       end = end === undefined ? length : end;
       return (!start && end >= length) ? array : baseSlice(array, start, end);
@@ -4707,7 +4701,7 @@
      * @params {boolean} [isCurried] Specify composing for a curried function.
      * @returns {Array} Returns the new array of composed arguments.
      */
-    function composeArgs(args, partials, holders, isCurried) {
+    function composeArgs(args, partials, holders, isCurried?) {
       var argsIndex = -1,
           argsLength = args.length,
           holdersLength = holders.length,
@@ -4742,7 +4736,7 @@
      * @params {boolean} [isCurried] Specify composing for a curried function.
      * @returns {Array} Returns the new array of composed arguments.
      */
-    function composeArgsRight(args, partials, holders, isCurried) {
+    function composeArgsRight(args, partials, holders, isCurried?) {
       var argsIndex = -1,
           argsLength = args.length,
           holdersIndex = -1,
@@ -4776,7 +4770,7 @@
      * @param {Array} [array=[]] The array to copy values to.
      * @returns {Array} Returns `array`.
      */
-    function copyArray(source, array) {
+    function copyArray(source, array?) {
       var index = -1,
           length = source.length;
 
@@ -4797,7 +4791,7 @@
      * @param {Function} [customizer] The function to customize copied values.
      * @returns {Object} Returns `object`.
      */
-    function copyObject(source, props, object, customizer) {
+    function copyObject(source, props, object?, customizer?) {
       var isNew = !object;
       object || (object = {});
 
@@ -4855,7 +4849,7 @@
      * @param {Function} [initializer] The accumulator object initializer.
      * @returns {Function} Returns the new aggregator function.
      */
-    function createAggregator(setter, initializer) {
+    function createAggregator(setter, initializer?) {
       return function(collection, iteratee) {
         var func = isArray(collection) ? arrayAggregator : baseAggregator,
             accumulator = initializer ? initializer() : {};
@@ -4905,7 +4899,7 @@
      * @param {boolean} [fromRight] Specify iterating from right to left.
      * @returns {Function} Returns the new base function.
      */
-    function createBaseEach(eachFunc, fromRight) {
+    function createBaseEach(eachFunc, fromRight?) {
       return function(collection, iteratee) {
         if (collection == null) {
           return collection;
@@ -4933,7 +4927,7 @@
      * @param {boolean} [fromRight] Specify iterating from right to left.
      * @returns {Function} Returns the new base function.
      */
-    function createBaseFor(fromRight) {
+    function createBaseFor(fromRight?) {
       return function(object, iteratee, keysFunc) {
         var index = -1,
             iterable = Object(object),
@@ -5108,7 +5102,7 @@
      * @param {boolean} [fromRight] Specify iterating from right to left.
      * @returns {Function} Returns the new flow function.
      */
-    function createFlow(fromRight) {
+    function createFlow(fromRight?) {
       return flatRest(function(funcs) {
         var length = funcs.length,
             index = length,
@@ -5182,7 +5176,7 @@
      * @param {number} [arity] The arity of `func`.
      * @returns {Function} Returns the new wrapped function.
      */
-    function createHybrid(func, bitmask, thisArg, partials, holders, partialsRight, holdersRight, argPos, ary, arity) {
+    function createHybrid(func, bitmask, thisArg?, partials?, holders?, partialsRight?, holdersRight?, argPos?, ary?, arity?) {
       var isAry = bitmask & WRAP_ARY_FLAG,
           isBind = bitmask & WRAP_BIND_FLAG,
           isBindKey = bitmask & WRAP_BIND_KEY_FLAG,
@@ -5367,7 +5361,7 @@
      * @param {boolean} [fromRight] Specify iterating from right to left.
      * @returns {Function} Returns the new range function.
      */
-    function createRange(fromRight) {
+    function createRange(fromRight?) {
       return function(start, end, step) {
         if (step && typeof step != 'number' && isIterateeCall(start, end, step)) {
           end = step = undefined;
@@ -5526,7 +5520,7 @@
      * @param {number} [arity] The arity of `func`.
      * @returns {Function} Returns the new wrapped function.
      */
-    function createWrap(func, bitmask, thisArg, partials, holders, argPos, ary, arity) {
+    function createWrap(func, bitmask, thisArg?, partials?, holders?, argPos?, ary?, arity?) {
       var isBindKey = bitmask & WRAP_BIND_KEY_FLAG;
       if (!isBindKey && typeof func != 'function') {
         throw new TypeError(FUNC_ERROR_TEXT);
@@ -5961,10 +5955,10 @@
      * @param {number} [arity] The arity of the created iteratee.
      * @returns {Function} Returns the chosen function or its result.
      */
-    function getIteratee() {
+    function getIteratee(..._arguments) {
       var result = lodash.iteratee || iteratee;
       result = result === iteratee ? baseIteratee : result;
-      return arguments.length ? result(arguments[0], arguments[1]) : result;
+      return _arguments.length ? result(_arguments[0], _arguments[1]) : result;
     }
 
     /**
@@ -6299,7 +6293,7 @@
      * @param {number} [length=MAX_SAFE_INTEGER] The upper bounds of a valid index.
      * @returns {boolean} Returns `true` if `value` is a valid index, else `false`.
      */
-    function isIndex(value, length) {
+    function isIndex(value, length?) {
       length = length == null ? MAX_SAFE_INTEGER : length;
       return !!length &&
         (typeof value == 'number' || reIsUint.test(value)) &&
@@ -6338,7 +6332,7 @@
      * @param {Object} [object] The object to query keys on.
      * @returns {boolean} Returns `true` if `value` is a property name, else `false`.
      */
-    function isKey(value, object) {
+    function isKey(value, object?) {
       if (isArray(value)) {
         return false;
       }
@@ -6451,6 +6445,79 @@
           (srcValue !== undefined || (key in Object(object)));
       };
     }
+
+    /**
+     * Creates a function that memoizes the result of `func`. If `resolver` is
+     * provided, it determines the cache key for storing the result based on the
+     * arguments provided to the memoized function. By default, the first argument
+     * provided to the memoized function is used as the map cache key. The `func`
+     * is invoked with the `this` binding of the memoized function.
+     *
+     * **Note:** The cache is exposed as the `cache` property on the memoized
+     * function. Its creation may be customized by replacing the `_.memoize.Cache`
+     * constructor with one whose instances implement the
+     * [`Map`](http://ecma-international.org/ecma-262/7.0/#sec-properties-of-the-map-prototype-object)
+     * method interface of `clear`, `delete`, `get`, `has`, and `set`.
+     *
+     * @static
+     * @memberOf _
+     * @since 0.1.0
+     * @category Function
+     * @param {Function} func The function to have its output memoized.
+     * @param {Function} [resolver] The function to resolve the cache key.
+     * @returns {Function} Returns the new memoized function.
+     * @example
+     *
+     * var object = { 'a': 1, 'b': 2 };
+     * var other = { 'c': 3, 'd': 4 };
+     *
+     * var values = _.memoize(_.values);
+     * values(object);
+     * // => [1, 2]
+     *
+     * values(other);
+     * // => [3, 4]
+     *
+     * object.a = 2;
+     * values(object);
+     * // => [1, 2]
+     *
+     * // Modify the result cache.
+     * values.cache.set(object, ['a', 'b']);
+     * values(object);
+     * // => ['a', 'b']
+     *
+     * // Replace `_.memoize.Cache`.
+     * _.memoize.Cache = WeakMap;
+     */
+    class _Memoize extends Function {
+      constructor(func, resolver) {
+        super();
+        if (typeof func != 'function' || (resolver != null && typeof resolver != 'function')) {
+          throw new TypeError(FUNC_ERROR_TEXT);
+        }
+        class memoized extends Function {
+          constructor(...args) {
+            super();
+            var key = resolver ? resolver.apply(this, args) : args[0],
+              cache = memoized.cache;
+
+            if (cache.has(key)) {
+              return cache.get(key);
+            }
+            var result = func.apply(this, args);
+            memoized.cache = cache.set(key, result) || cache;
+            return result;
+          };
+          static cache = new (_Memoize.Cache || MapCache);
+        }
+        return memoized;
+      }
+
+      // Expose `MapCache`.
+      static Cache = MapCache;
+    }
+    var memoize: _Memoize = _Memoize;
 
     /**
      * A specialized version of `_.memoize` which clears the memoized function's
@@ -6703,19 +6770,19 @@
       var count = 0,
           lastCalled = 0;
 
-      return function() {
+      return (..._arguments) => {
         var stamp = nativeNow(),
             remaining = HOT_SPAN - (stamp - lastCalled);
 
         lastCalled = stamp;
         if (remaining > 0) {
           if (++count >= HOT_COUNT) {
-            return arguments[0];
+            return _arguments[0];
           }
         } else {
           count = 0;
         }
-        return func.apply(undefined, arguments);
+        return func.apply(undefined, _arguments);
       };
     }
 
@@ -6727,7 +6794,7 @@
      * @param {number} [size=array.length] The size of `array`.
      * @returns {Array} Returns `array`.
      */
-    function shuffleSelf(array, size) {
+    function shuffleSelf(array, size?) {
       var index = -1,
           length = array.length,
           lastIndex = length - 1;
@@ -10035,7 +10102,7 @@
      * _.map(['6', '8', '10'], _.ary(parseInt, 1));
      * // => [6, 8, 10]
      */
-    function ary(func, n, guard) {
+    function ary(func, n, guard?) {
       n = guard ? undefined : n;
       n = (func && n == null) ? func.length : n;
       return createWrap(func, WRAP_ARY_FLAG, undefined, undefined, undefined, undefined, n);
@@ -10508,73 +10575,6 @@
     function flip(func) {
       return createWrap(func, WRAP_FLIP_FLAG);
     }
-
-    /**
-     * Creates a function that memoizes the result of `func`. If `resolver` is
-     * provided, it determines the cache key for storing the result based on the
-     * arguments provided to the memoized function. By default, the first argument
-     * provided to the memoized function is used as the map cache key. The `func`
-     * is invoked with the `this` binding of the memoized function.
-     *
-     * **Note:** The cache is exposed as the `cache` property on the memoized
-     * function. Its creation may be customized by replacing the `_.memoize.Cache`
-     * constructor with one whose instances implement the
-     * [`Map`](http://ecma-international.org/ecma-262/7.0/#sec-properties-of-the-map-prototype-object)
-     * method interface of `clear`, `delete`, `get`, `has`, and `set`.
-     *
-     * @static
-     * @memberOf _
-     * @since 0.1.0
-     * @category Function
-     * @param {Function} func The function to have its output memoized.
-     * @param {Function} [resolver] The function to resolve the cache key.
-     * @returns {Function} Returns the new memoized function.
-     * @example
-     *
-     * var object = { 'a': 1, 'b': 2 };
-     * var other = { 'c': 3, 'd': 4 };
-     *
-     * var values = _.memoize(_.values);
-     * values(object);
-     * // => [1, 2]
-     *
-     * values(other);
-     * // => [3, 4]
-     *
-     * object.a = 2;
-     * values(object);
-     * // => [1, 2]
-     *
-     * // Modify the result cache.
-     * values.cache.set(object, ['a', 'b']);
-     * values(object);
-     * // => ['a', 'b']
-     *
-     * // Replace `_.memoize.Cache`.
-     * _.memoize.Cache = WeakMap;
-     */
-    function memoize(func, resolver) {
-      if (typeof func != 'function' || (resolver != null && typeof resolver != 'function')) {
-        throw new TypeError(FUNC_ERROR_TEXT);
-      }
-      var memoized = function() {
-        var args = arguments,
-            key = resolver ? resolver.apply(this, args) : args[0],
-            cache = memoized.cache;
-
-        if (cache.has(key)) {
-          return cache.get(key);
-        }
-        var result = func.apply(this, args);
-        memoized.cache = cache.set(key, result) || cache;
-        return result;
-      };
-      memoized.cache = new (memoize.Cache || MapCache);
-      return memoized;
-    }
-
-    // Expose `MapCache`.
-    memoize.Cache = MapCache;
 
     /**
      * Creates a function that negates the result of the predicate `func`. The
@@ -13111,7 +13111,7 @@
      * _.get(object, 'a.b.c', 'default');
      * // => 'default'
      */
-    function get(object, path, defaultValue) {
+    function get(object, path, defaultValue?) {
       var result = object == null ? undefined : baseGet(object, path);
       return result === undefined ? defaultValue : result;
     }
@@ -15185,7 +15185,7 @@
      * _.words('fred, barney, & pebbles', /[^, ]+/g);
      * // => ['fred', 'barney', '&', 'pebbles']
      */
-    function words(string, pattern, guard) {
+    function words(string, pattern?, guard?) {
       string = toString(string);
       pattern = guard ? undefined : pattern;
 
@@ -15659,7 +15659,7 @@
      * _('fred').vowels();
      * // => ['e']
      */
-    function mixin(object, source, options) {
+    function mixin(object, source, options?) {
       var props = keys(source),
           methodNames = baseFunctions(source, props);
 
